@@ -1,0 +1,33 @@
+name: Build and Test Spring Boot Project
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup Java
+      uses: actions/setup-java@v2
+      with:
+        java-version: '11'  # Adjust the Java version as needed
+
+    - name: Cache Maven Dependencies
+      id: cache-maven
+      uses: actions/cache@v2
+      with:
+        path: ~/.m2/repository  # Path to Maven's local repository
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-m2-
+
+    - name: Build and Test
+      run: |
+        ./mvnw clean install -Dmaven.repo.local=~/.m2/repository
+      if: steps.cache-maven.outputs.cache-hit != 'true'
